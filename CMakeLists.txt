@@ -114,6 +114,7 @@ add_executable(
   include/dinic.hpp
   include/find_bridges.hpp
   include/graph.hpp
+  include/inverse_mst.hpp
   include/iterators.hpp
   include/maximal.hpp
   include/negetive_cycle.hpp
@@ -125,6 +126,7 @@ add_executable(
   methods/cut_points_method.cpp
   methods/dinic.cpp
   methods/find_bridges.cpp
+  methods/inverse_mst_method.cpp
   methods/main.cpp
   methods/maximal_method.cpp
   methods/methods.hpp
@@ -154,6 +156,7 @@ add_executable(
   include/dinic.hpp
   include/find_bridges.hpp
   include/graph.hpp
+  include/inverse_mst.hpp
   include/iterators.hpp
   include/maximal.hpp
   include/negetive_cycle.hpp
@@ -166,6 +169,7 @@ add_executable(
   tests/dinic_test.cpp
   tests/find_bridges_test.cpp
   tests/graph_test.cpp
+  tests/inverse_mst_test.cpp
   tests/io.hpp
   tests/main.cpp
   tests/maximal_test.cpp
