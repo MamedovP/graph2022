@@ -7,6 +7,12 @@
 #ifndef INCLUDE_INVERSE_MST_HPP_
 #define INCLUDE_INVERSE_MST_HPP_
 
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include "iterators.hpp"
 #include "weighted_graph.hpp"
 
 namespace graph {
