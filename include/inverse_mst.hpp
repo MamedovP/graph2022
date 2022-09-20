@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <vector>
+#include <deque>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -30,18 +31,18 @@ void InverseMst(const WeightedGraph<T>& wGraph) {
   size_t m = wGraph.weights.size();
 
   size_t nn = m + 2, s = nn - 2, t = nn - 1;
-  vector<vector<T>> f(nn, vector<T>(nn));
-  vector<vector<T>> u(nn, vector<T>(nn));
-  vector<vector<T>> c(nn, vector<T>(nn));
+  std::vector<std::vector<T>> f(nn, std::vector<T>(nn));
+  std::vector<std::vector<T>> u(nn, std::vector<T>(nn));
+  std::vector<std::vector<T>> c(nn, std::vector<T>(nn));
   
   for (auto it = wGraph.weights.begin() + (n - 1); it != wGraph.weights.end();
        ++it) {
     size_t i = n - 1;
-    vector<size_t> q(n);
+    std::vector<size_t> q(n);
     size_t h = 0, t = 0;
     auto& cur = *it;
     q[t++] = cur.first.first;
-    vector<size_t> rib_id(n, -1);
+    std::vector<size_t> rib_id(n, -1);
     rib_id[cur.first.first] = -2;
     while (h < t) {
       size_t v = q[h++];
@@ -72,7 +73,7 @@ void InverseMst(const WeightedGraph<T>& wGraph) {
   for (size_t i = 0; i < n - 1; ++i) u[s][i] = 1;
   for (size_t i = n - 1; i < m; ++i) u[i][t] = 1;
 
-  vector<T> pi(nn);
+  std::vector<T> pi(nn);
   pi[s] = INF;
   for (size_t i = 0; i < n - 1; ++i) {
     pi[i] = INF;
@@ -84,12 +85,12 @@ void InverseMst(const WeightedGraph<T>& wGraph) {
   }
 
   for (;;) {
-    vector<size_t> id(nn);
-    deque<size_t> q;
+    std::vector<size_t> id(nn);
+    std::deque<size_t> q;
     q.push_back(s);
-    vector<T> d(nn, INF);
+    std::vector<T> d(nn, INF);
     d[s] = 0;
-    vector<size_t> p(nn, -1);
+    std::vector<size_t> p(nn, -1);
     while (!q.empty()) {
       size_t v = q.front();
       q.pop_front();
