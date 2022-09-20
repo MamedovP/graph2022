@@ -57,6 +57,14 @@ void TestBelmanf(httplib::Client* cli);
  * @param cli Указатель на HTTP клиент.
  */
 void TestDinic(httplib::Client *cli);
+
+/**
+ * @brief Набор тестов для алгоритма обратной задачи минимального остова.
+ *
+ * @param cli Указатель на HTTP клиент.
+ */
+void TestInverseMst(httplib::Client* cli);
+
 /* Конец вставки. */
 
 #endif  // TESTS_TEST_HPP_

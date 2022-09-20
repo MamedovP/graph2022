@@ -7,6 +7,7 @@
  */
 
 #include <string>
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include "inverse_mst.hpp"
 
@@ -29,17 +30,13 @@ int InverseMstMethod(const nlohmann::json& input, nlohmann::json* output) {
 
     if (type == "weighted_graph") {
         if (typeWeight == "int") {
-            return InverseMstMethodHelper<int>(
-                input, output, type);
+            return InverseMstMethodHelper<int>(input, output, type);
         } else if (typeWeight == "float") {
-            return InverseMstMethodHelper<float>(
-                input, output, type);
+            return InverseMstMethodHelper<float>(input, output, type);
         } else if (typeWeight == "double") {
-            return InverseMstMethodHelper<double>(
-                input, output, type);
+            return InverseMstMethodHelper<double>(input, output, type);
         } else if (typeWeight == "long double") {
-            return InverseMstMethodHelper<long double>(
-                input, output, type);
+            return InverseMstMethodHelper<long double>(input, output, type);
         }
     }
     return -1;
@@ -81,12 +78,18 @@ static int InverseMstMethodHelper(const nlohmann::json& input,
     }
     // Добавляем ребра
     for (size_t j = 0; j < numEdges; j++) {
-        wGraph.AddEdge(input.at("edges").at(j).at(0),
-                      input.at("edges").at(j).at(1),
-                      input.at("edges").at(j).at(2));
+        wGraph.AddEdge((input.at("edges").at(j).at(0)),
+                      (input.at("edges").at(j).at(1)),
+                      (input.at("edges").at(j).at(2)));
     }
     /* Здесь вызывается сам алгоритм. */
-    InverseMst(wGraph);    
+    std::vector<std::pair<std::pair<size_t, size_t>, T>> ribs;
+    InverseMst(wGraph, &ribs);
+    for (size_t i = 0; i < ribs.size(); i++) {
+        (*output)["data"][i][0] = ribs[i].first.first;
+        (*output)["data"][i][1] = ribs[i].first.second;
+        (*output)["data"][i][2] = ribs[i].second;
+    }   
     return 0;
 }
 

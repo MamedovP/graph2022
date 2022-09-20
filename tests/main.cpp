@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
 
   /* Сюда нужно вставить вызов набора тестов для алгоритма. */
 
+  TestInverseMst(&cli);
   TestTopologicalSorting(&cli);
   TestCutPoints(&cli);
   TestDinic(&cli);

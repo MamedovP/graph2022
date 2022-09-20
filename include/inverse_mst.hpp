@@ -8,6 +8,7 @@
 #define INCLUDE_INVERSE_MST_HPP_
 
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <deque>
 #include <unordered_map>
@@ -22,52 +23,60 @@ namespace graph {
  *
  * @tparam T Тип данных весов рёбер графа.
  * @param wGraph Взвешенный граф.
+ * @param ribs Вектор, в котором хранится результат работы функции.
  */
 template <typename T>
 
-void InverseMst(const WeightedGraph<T>& wGraph) {
+void InverseMst(const WeightedGraph<T>& wGraph, 
+                std::vector<std::pair<std::pair<size_t, size_t>, T>>* ribs) {
   const size_t INF = 1000 * 1000 * 1000;
   size_t n = wGraph.NumVertices();
-  size_t m = wGraph.weights.size();
 
+  // заполнение вектора из рёбер графа
+  for (size_t v : wGraph.Vertices()) {
+    for (size_t neighbour : wGraph.Edges(v)) {
+      if (neighbour > v)
+        ribs.push_back({{v, neighbour}, wGraph.EdgeWeight(v, neighbour)});
+    }
+  }
+  size_t m = ribs.size();
   size_t nn = m + 2, s = nn - 2, t = nn - 1;
   std::vector<std::vector<T>> f(nn, std::vector<T>(nn));
   std::vector<std::vector<T>> u(nn, std::vector<T>(nn));
   std::vector<std::vector<T>> c(nn, std::vector<T>(nn));
   
-  for (auto it = wGraph.weights.begin() + (n - 1); it != wGraph.weights.end();
-       ++it) {
-    size_t i = n - 1;
+  for (size_t i = (n - 1); i < m; ++i) {
     std::vector<size_t> q(n);
     size_t h = 0, t = 0;
-    auto& cur = *it;
+    std::pair<std::pair<size_t, size_t>, T>& cur = ribs[i];
     q[t++] = cur.first.first;
     std::vector<size_t> rib_id(n, -1);
     rib_id[cur.first.first] = -2;
     while (h < t) {
       size_t v = q[h++];
-      for (auto j = (wGraph.edges[v]).begin(); j != (wGraph.edges[v]).end();
-           ++j)
-        if ((wGraph.weights.find(wGraph.MakeEdgeId(v, *j)) -
-             wGraph.weights.begin()) >= n - 1)
+      for (auto j : wGraph.Edges(v))
+        if (std::distance(ribs.begin(),
+            std::find(ribs.begin(), ribs.end(), 
+            (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
+                    : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v)))) >= n - 1)
           break;
-        else if (rib_id[(*j)] == -1) {
-          rib_id[(*j)] = wGraph.weights.find(wGraph.MakeEdgeId(v, *j)) -
-                         wGraph.weights.begin();
-          q[t++] = (*j);
+        else if (rib_id[j] == -1) {
+          rib_id[j] = std::distance(ribs.begin(),
+                      std::find(ribs.begin(), ribs.end(), 
+                      (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
+                              : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j,v))));
+          q[t++] = j;
         }
     }
     for (size_t v = cur.first.second, pv; v != cur.first.first; v = pv) {
       size_t r = rib_id[v];
-      pv = v != (*(wGraph.weights.begin() + r)).first.first
-               ? (*(wGraph.weights.begin() + r)).first.first
-               : (*(wGraph.weights.begin() + r)).first.second;
+      pv = v != ribs[r].first.first
+               ? ribs[r].first.first
+               : ribs[r].first.second;
       u[r][i] = n;
-      c[r][i] = (*(wGraph.weights.begin() + i)).second -
-                (*(wGraph.weights.begin() + r)).second;
+      c[r][i] = ribs[i].second - ribs[r].second;
       c[i][r] = -c[r][i];
     }
-    ++i;
   }
   u[s][t] = n + 1;
   for (size_t i = 0; i < n - 1; ++i) u[s][i] = 1;
@@ -79,9 +88,8 @@ void InverseMst(const WeightedGraph<T>& wGraph) {
     pi[i] = INF;
     for (size_t j = n - 1; j < m; ++j)
       if (u[i][j])
-        pi[i] = min(pi[i], (*(wGraph.weights.begin() + j)).second -
-                               (*(wGraph.weights.begin() + i)).second);
-    pi[s] = min(pi[s], pi[i]);
+        pi[i] = std::min(pi[i], ribs[j].second - ribs[i].second);
+    pi[s] = std::min(pi[s], pi[i]);
   }
 
   for (;;) {
@@ -119,9 +127,9 @@ void InverseMst(const WeightedGraph<T>& wGraph) {
 
   for (size_t i = 0; i < m; ++i) pi[i] -= pi[s];
   for (size_t i = 0; i < n - 1; ++i)
-    if (f[s][i]) (*(wGraph.weights.begin() + i)).second += pi[i];
+    if (f[s][i]) ribs[i].second += pi[i];
   for (size_t i = n - 1; i < m; ++i)
-    if (f[i][t]) (*(wGraph.weights.begin() + i)).second += pi[i];
+    if (f[i][t]) ribs[i].second += pi[i];
 }
 
 }  // namespace graph
