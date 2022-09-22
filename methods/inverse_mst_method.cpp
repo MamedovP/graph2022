@@ -78,14 +78,14 @@ static int InverseMstMethodHelper(const nlohmann::json& input,
     }
     // Добавляем ребра
     for (size_t j = 0; j < numEdges; j++) {
-        wGraph.AddEdge((input.at("edges").at(j).at(0)),
-                      (input.at("edges").at(j).at(1)),
+        wGraph.AddEdge(static_cast<size_t>(input.at("edges").at(j).at(0)),
+                      static_cast<size_t>(input.at("edges").at(j).at(1)),
                       (input.at("edges").at(j).at(2)));
     }
     /* Здесь вызывается сам алгоритм. */
     std::vector<std::pair<std::pair<size_t, size_t>, T>> ribs;
     InverseMst(wGraph, &ribs);
-    for (size_t i = 0; i < ribs.size(); i++) {
+    for (size_t i = 0; i < ribs.size(); ++i) {
         (*output)["data"][i][0] = ribs[i].first.first;
         (*output)["data"][i][1] = ribs[i].first.second;
         (*output)["data"][i][2] = ribs[i].second;

@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 #include <vector>
 #include <deque>
 #include <unordered_map>
@@ -50,26 +51,26 @@ void InverseMst(const WeightedGraph<T>& wGraph,
     size_t h = 0, t = 0;
     std::pair<std::pair<size_t, size_t>, T>& cur = (*ribs)[i];
     q[t++] = cur.first.first;
-    std::vector<size_t> rib_id(n, -1);
+    std::vector<long int> rib_id(n, -1);
     rib_id[cur.first.first] = -2;
     while (h < t) {
       size_t v = q[h++];
       for (auto j : wGraph.Edges(v))
-        if (std::distance(ribs->begin(),
+        if (std::abs(std::distance(ribs->begin(),
             std::find(ribs->begin(), ribs->end(), 
             (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
-                    : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v)))) >= n - 1)
+                    : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v))))) >= n - 1)
           break;
         else if (rib_id[j] == -1) {
-          rib_id[j] = std::distance(ribs->begin(),
+          rib_id[j] = std::abs(std::distance(ribs->begin(),
                       std::find(ribs->begin(), ribs->end(), 
                       (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
-                              : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v))));
+                              : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v)))));
           q[t++] = j;
         }
     }
     for (size_t v = cur.first.second, pv; v != cur.first.first; v = pv) {
-      size_t r = rib_id[v];
+      size_t r = static_cast<size_t>(rib_id[v]);
       pv = v != (*ribs)[r].first.first
                ? (*ribs)[r].first.first
                : (*ribs)[r].first.second;
