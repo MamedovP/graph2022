@@ -65,7 +65,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(1, output["id"]);
     REQUIRE_EQUAL("weighted_graph", output["type"]);
     int sum = 0;
-    for (size_t i = 0; i < static_cast<size_t>(output["data"].size()); i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output["size"]) - 1; i++) 
       sum += static_cast<int>(output["data"][i][2]);
     REQUIRE_EQUAL(sum, static_cast<int>(1));
     REQUIRE_EQUAL(output["data"].size(), static_cast<size_t>(4));
@@ -95,7 +95,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(2, output1["id"]);
     REQUIRE_EQUAL("weighted_graph", output1["type"]);
     int sum1 = 0;
-    for (size_t i = 0; i < static_cast<size_t>(output1["data"].size()); i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output1["size"]) - 1; i++) 
       sum1 += static_cast<int>(output1["data"][i][2]);
     REQUIRE_EQUAL(sum1, static_cast<int>(1));
     REQUIRE_EQUAL(output1["data"].size(), static_cast<size_t>(5));
@@ -125,7 +125,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(3, output2["id"]);
     REQUIRE_EQUAL("weighted_graph", output2["type"]);
     int sum2 = 0;
-    for (size_t i = 0; i < static_cast<size_t>(input2["numEdges"]); i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output2["size"]) - 1; i++) 
       sum2 += static_cast<int>(output2["data"][i][2]);
     REQUIRE_EQUAL(sum2, static_cast<int>(3));
     REQUIRE_EQUAL(output2["data"].size(), static_cast<size_t>(3));
@@ -146,9 +146,13 @@ static void RandomTest(httplib::Client* cli) {
   std::uniform_int_distribution<size_t> yesno(0, 1);
   for (int it = 0; it < numTries; it++) {
     nlohmann::json input;
+    input["id"] = it;
+    input["type"] = "weighted_graph";
+    input["typeWeights"] = "int";
 
     // Получаем случайный размер массива, используя функцию распределения.
     size_t n = arraySize(gen);
+    input["size"] = n;
     std::vector<size_t> matrix(n * n);
     std::vector<int> weight(n * n);
     size_t numEdges = 0;
@@ -165,17 +169,17 @@ static void RandomTest(httplib::Client* cli) {
       if (a < b) {
         matrix[a * n + b] = 1;
         weight[a * n + b] = elem(gen);
-        input["data"][numEdges * 3] = a;
-        input["data"][numEdges * 3 + 1] = b;
-        input["data"][numEdges * 3 + 2] = weight[a * n + b];
+        input["edges"][numEdges][0] = a;
+        input["edges"][numEdges][1] = b;
+        input["edges"][numEdges][2] = weight[a * n + b];
         numEdges++;
         }
         else {
           matrix[b * n + a] = 1;
           weight[b * n + a] = elem(gen);
-          input["data"][numEdges * 3] = b;
-          input["data"][numEdges * 3 + 1] = a;
-          input["data"][numEdges * 3 + 2] = weight[b * n + a];
+          input["edges"][numEdges][0] = b;
+          input["edges"][numEdges][1] = a;
+          input["edges"][numEdges][2] = weight[b * n + a];
           numEdges++;
           }
       a = b;      
@@ -185,16 +189,12 @@ static void RandomTest(httplib::Client* cli) {
         if ((matrix[i * n + j] != 1) && (yesno(gen))) {
           matrix[i * n + j] = 1;
           weight[i * n + j] = elem(gen);
-          input["data"][numEdges * 3] = i;
-          input["data"][numEdges * 3 + 1] = j;
-          input["data"][numEdges * 3 + 2] = weight[i * n + j];
+          input["edges"][numEdges][0] = i;
+          input["edges"][numEdges][1] = j;
+          input["edges"][numEdges][2] = weight[i * n + j];
           numEdges++;
         }
       }
-    input["id"] = it;
-    input["type"] = "weighted_graph";
-    input["typeWeights"] = "int";
-    input["size"] = n;
     input["numEdges"] = numEdges;
     for (size_t i = 0; i < n; i++) {
       input["vertices"][i] = i;
@@ -212,8 +212,9 @@ static void RandomTest(httplib::Client* cli) {
     
     // заполнение вектора для сортировки
     for (size_t i = 0; i < n; i++)
-      for (size_t j = i + 1; j < n; j++) 
-        g.push_back({weight[i * n + j], {i, j}});
+      for (size_t j = i + 1; j < n; j++)
+        if(matrix[i * n + j] == 1)
+          g.push_back({weight[i * n + j], {i, j}});
     sort(g.begin(), g.end());
     int cost = 0;
     std::vector<std::pair<int, std::pair<size_t, size_t>>> result;
@@ -235,7 +236,7 @@ static void RandomTest(httplib::Client* cli) {
     }
     int sumWeight = 0;
     int sumInverseMst = 0;
-    for (size_t i = 0; i < (n - 1); i++) sumWeight += result[i].first;
+    for (size_t i = 0; i < result.size(); i++) sumWeight += result[i].first;
     for (size_t i = 0; i < (n - 1); i++) 
       sumInverseMst += static_cast<size_t>(output["data"][i][2]);
     REQUIRE_EQUAL(n, output["size"]);

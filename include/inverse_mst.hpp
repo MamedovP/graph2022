@@ -33,13 +33,10 @@ void InverseMst(const WeightedGraph<T>& wGraph,
   const size_t INF = 1000 * 1000 * 1000;
   size_t n = wGraph.NumVertices();
 
-  // заполнение вектора из рёбер графа
-  for (size_t v : wGraph.Vertices()) {
-    for (size_t neighbour : wGraph.Edges(v)) {
-      if (neighbour > v)
-        ribs->push_back({{v, neighbour}, wGraph.EdgeWeight(v, neighbour)});
-    }
-  }
+  /*
+  for (auto v = ribs->begin(); v < ribs->end(); ++v) {
+    std::cout << (*v).first.first << (*v).first.second << (*v).second << std::endl;
+  }*/
   size_t m = ribs->size();
   size_t nn = m + 2, s = nn - 2, t = nn - 1;
   std::vector<std::vector<T>> f(nn, std::vector<T>(nn));
@@ -55,23 +52,31 @@ void InverseMst(const WeightedGraph<T>& wGraph,
     rib_id[cur.first.first] = -2;
     while (h < t) {
       size_t v = q[h++];
+      std::cout << v << "   v" << std::endl;
       for (auto j : wGraph.Edges(v))
         if (std::abs(std::distance(ribs->begin(),
             std::find(ribs->begin(), ribs->end(), 
             (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
                     : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v))))) >= n - 1)
-          break;
+          ;//std::cout << j << " j >= n - 1" << std::endl;//break;
         else if (rib_id[j] == -1) {
           rib_id[j] = std::abs(std::distance(ribs->begin(),
                       std::find(ribs->begin(), ribs->end(), 
                       (v < j) ? std::make_pair(std::make_pair(v, j), wGraph.EdgeWeight(v, j)) 
                               : std::make_pair(std::make_pair(j, v), wGraph.EdgeWeight(j, v)))));
+          //std::cout << j << " j" << std::endl;
+          //std::cerr << rib_id[j] << " ribid" << std::endl;
           q[t++] = j;
         }
     }
+    for (size_t c = 0; c < n; c++) {
+      std::cout << rib_id[c] << "        " << c << std::endl; 
+    }
     for (size_t v = cur.first.second, pv; v != cur.first.first; v = pv) {
+      std::cout << v << " [v]" << std::endl;
       size_t r = static_cast<size_t>(rib_id[v]);
-      pv = v != (*ribs)[r].first.first
+      std::cout << r << " r" << std::endl;
+      pv = (v != (*ribs)[r].first.first)
                ? (*ribs)[r].first.first
                : (*ribs)[r].first.second;
       u[r][i] = n;
@@ -131,6 +136,10 @@ void InverseMst(const WeightedGraph<T>& wGraph,
     if (f[s][i]) (*ribs)[i].second += pi[i];
   for (size_t i = n - 1; i < m; ++i)
     if (f[i][t]) (*ribs)[i].second += pi[i];
+
+  for (auto v = ribs->begin(); v < ribs->end(); ++v) {
+    std::cout << (*v).first.first << "&" << (*v).first.second << "&" << (*v).second << std::endl;
+  }
 }
 
 }  // namespace graph

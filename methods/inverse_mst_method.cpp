@@ -72,18 +72,19 @@ static int InverseMstMethodHelper(const nlohmann::json& input,
         /* Для словарей используется индекс в виде строки,
         а для массивов просто целое число типа size_t. */
         size_t v = input.at("vertices").at(i);
-        if (v != 0) {
-            wGraph.AddVertex(v);
-        }
+        wGraph.AddVertex(v);
     }
     // Добавляем ребра
+    std::vector<std::pair<std::pair<size_t, size_t>, T>> ribs;
     for (size_t j = 0; j < numEdges; j++) {
         wGraph.AddEdge(static_cast<size_t>(input.at("edges").at(j).at(0)),
                       static_cast<size_t>(input.at("edges").at(j).at(1)),
                       (input.at("edges").at(j).at(2)));
+        ribs.push_back({{static_cast<size_t>(input.at("edges").at(j).at(0)), 
+                         static_cast<size_t>(input.at("edges").at(j).at(1))}, 
+                         input.at("edges").at(j).at(2)});
     }
     /* Здесь вызывается сам алгоритм. */
-    std::vector<std::pair<std::pair<size_t, size_t>, T>> ribs;
     InverseMst(wGraph, &ribs);
     for (size_t i = 0; i < ribs.size(); ++i) {
         (*output)["data"][i][0] = ribs[i].first.first;
