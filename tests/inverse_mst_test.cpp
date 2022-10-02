@@ -65,7 +65,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(1, output["id"]);
     REQUIRE_EQUAL("weighted_graph", output["type"]);
     int sum = 0;
-    for (size_t i = 0; i < static_cast<size_t>(output["size"]) - 1; i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output["size"]) - 1; i++)
       sum += static_cast<int>(output["data"][i][2]);
     REQUIRE_EQUAL(sum, static_cast<int>(1));
     REQUIRE_EQUAL(output["data"].size(), static_cast<size_t>(4));
@@ -95,7 +95,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(2, output1["id"]);
     REQUIRE_EQUAL("weighted_graph", output1["type"]);
     int sum1 = 0;
-    for (size_t i = 0; i < static_cast<size_t>(output1["size"]) - 1; i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output1["size"]) - 1; i++)
       sum1 += static_cast<int>(output1["data"][i][2]);
     REQUIRE_EQUAL(sum1, static_cast<int>(1));
     REQUIRE_EQUAL(output1["data"].size(), static_cast<size_t>(5));
@@ -125,7 +125,7 @@ static void SimpleTest(httplib::Client* cli) {
     REQUIRE_EQUAL(3, output2["id"]);
     REQUIRE_EQUAL("weighted_graph", output2["type"]);
     int sum2 = 0;
-    for (size_t i = 0; i < static_cast<size_t>(output2["size"]) - 1; i++) 
+    for (size_t i = 0; i < static_cast<size_t>(output2["size"]) - 1; i++)
       sum2 += static_cast<int>(output2["data"][i][2]);
     REQUIRE_EQUAL(sum2, static_cast<int>(3));
     REQUIRE_EQUAL(output2["data"].size(), static_cast<size_t>(3));
@@ -173,8 +173,7 @@ static void RandomTest(httplib::Client* cli) {
         input["edges"][numEdges][1] = b;
         input["edges"][numEdges][2] = weight[a * n + b];
         numEdges++;
-        }
-        else {
+        } else {
           matrix[b * n + a] = 1;
           weight[b * n + a] = elem(gen);
           input["edges"][numEdges][0] = b;
@@ -182,7 +181,7 @@ static void RandomTest(httplib::Client* cli) {
           input["edges"][numEdges][2] = weight[b * n + a];
           numEdges++;
           }
-      a = b;      
+      a = b;
     }
     for (size_t i = 0; i < n; i++)
       for (size_t j = i + 1; j < n; j++) {
@@ -200,48 +199,55 @@ static void RandomTest(httplib::Client* cli) {
       input["vertices"][i] = i;
     }
     // Отправляем данные на сервер POST запросом.
-    httplib::Result res = cli->Post("/InverseMst", input.dump(), 
+    httplib::Result res = cli->Post("/InverseMst", input.dump(),
         "application/json");
     // Используем метод parse() для преобразования строки ответа сервера
     // (res->body) в объект JSON.
     nlohmann::json output = nlohmann::json::parse(res->body);
-    
-    //Алгоритм Краскала 
+
+    // Алгоритм Краскала
     std::vector<std::pair<int, std::pair<size_t, size_t>>> g;
     // вес - вершина 1 - вершина 2
-    
+
     // заполнение вектора для сортировки
     for (size_t i = 0; i < n; i++)
       for (size_t j = i + 1; j < n; j++)
-        if(matrix[i * n + j] == 1)
+        if (matrix[i * n + j] == 1)
           g.push_back({weight[i * n + j], {i, j}});
     sort(g.begin(), g.end());
+    // std::cout << g.size() << std::endl;
     int cost = 0;
     std::vector<std::pair<int, std::pair<size_t, size_t>>> result;
-    std::vector<size_t> treeId(n);
-    for (size_t i = 0; i < n; i++) {
-      treeId[i] = i;
-    }
+    std::vector<size_t> treeId(n, n);
+    for (size_t i = 0; i < n; i++)
+      for (size_t j = i + 1; j < n; j++)
+        treeId[i] = i;
     for (size_t i = 0; i < g.size(); i++) {
       size_t a = g[i].second.first,  b = g[i].second.second;
       int l = g[i].first;
       if (treeId[a] != treeId[b]) {
         cost += l;
-		    result.push_back(std::make_pair(weight[a * n + b], std::make_pair(a, b)));
-		    size_t oldId = treeId[b],  newId = treeId[a];
+        result.push_back(std::make_pair(weight[a * n + b], std::make_pair(a, b)));
+        size_t oldId = treeId[b],  newId = treeId[a];
 		    for (size_t j = 0; j < n; j++)
-        if (treeId[j] == oldId)
-          treeId[j] = newId;
+          if (treeId[j] == oldId)
+            treeId[j] = newId;
 	    }
     }
     int sumWeight = 0;
     int sumInverseMst = 0;
-    for (size_t i = 0; i < result.size(); i++) sumWeight += result[i].first;
-    for (size_t i = 0; i < (n - 1); i++) 
+    for (size_t i = 0; i < result.size(); i++) {
+      sumWeight += result[i].first;
+    }
+    for (size_t i = 0; i < (n - 1); i++) {
       sumInverseMst += static_cast<size_t>(output["data"][i][2]);
+      /*std::cout << output["data"][i][2] << "     " << output["data"][i][0]
+                << "  " << output["data"][i][1] << std::endl;*/
+    }
+    // std::cout << cost << "cost" << std::endl;
     REQUIRE_EQUAL(n, output["size"]);
     REQUIRE_EQUAL(it, output["id"]);
     REQUIRE_EQUAL("weighted_graph", output["type"]);
-    REQUIRE_EQUAL(sumWeight, sumInverseMst);
+    REQUIRE_EQUAL(sumWeight, cost);
   }
 }

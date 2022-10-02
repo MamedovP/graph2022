@@ -26,7 +26,7 @@ int InverseMstMethod(const nlohmann::json& input, nlohmann::json* output) {
     */
     std::string type = input.at("type");
     std::string typeWeight = input.at("typeWeights");
-    
+
 
     if (type == "weighted_graph") {
         if (typeWeight == "int") {
@@ -57,7 +57,7 @@ int InverseMstMethod(const nlohmann::json& input, nlohmann::json* output) {
  */
 template<typename T>
 static int InverseMstMethodHelper(const nlohmann::json& input,
-                                  nlohmann::json* output, 
+                                  nlohmann::json* output,
                                   std::string type) {
     size_t size = input.at("size");
     (*output)["id"] = input.at("id");
@@ -80,8 +80,8 @@ static int InverseMstMethodHelper(const nlohmann::json& input,
         wGraph.AddEdge(static_cast<size_t>(input.at("edges").at(j).at(0)),
                       static_cast<size_t>(input.at("edges").at(j).at(1)),
                       (input.at("edges").at(j).at(2)));
-        ribs.push_back({{static_cast<size_t>(input.at("edges").at(j).at(0)), 
-                         static_cast<size_t>(input.at("edges").at(j).at(1))}, 
+        ribs.push_back({{static_cast<size_t>(input.at("edges").at(j).at(0)),
+                         static_cast<size_t>(input.at("edges").at(j).at(1))},
                          input.at("edges").at(j).at(2)});
     }
     /* Здесь вызывается сам алгоритм. */
@@ -90,8 +90,8 @@ static int InverseMstMethodHelper(const nlohmann::json& input,
         (*output)["data"][i][0] = ribs[i].first.first;
         (*output)["data"][i][1] = ribs[i].first.second;
         (*output)["data"][i][2] = ribs[i].second;
-    }   
+    }
     return 0;
 }
 
-} // namespace graph
+}  // namespace graph
