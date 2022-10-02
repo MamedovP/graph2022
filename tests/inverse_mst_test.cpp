@@ -134,7 +134,7 @@ static void SimpleTest(httplib::Client* cli) {
 
 static void RandomTest(httplib::Client* cli) {
   // Число попыток.
-  const int numTries = 100;
+  const int numTries = 10;
   // Используется для инициализации генератора случайных чисел.
   std::random_device rd;
   // Генератор случайных чисел.
@@ -227,12 +227,13 @@ static void RandomTest(httplib::Client* cli) {
       int l = g[i].first;
       if (treeId[a] != treeId[b]) {
         cost += l;
-        result.push_back(std::make_pair(weight[a * n + b], std::make_pair(a, b)));
+        result.push_back(std::make_pair(weight[a * n + b],
+                         std::make_pair(a, b)));
         size_t oldId = treeId[b],  newId = treeId[a];
-		    for (size_t j = 0; j < n; j++)
+        for (size_t j = 0; j < n; j++)
           if (treeId[j] == oldId)
             treeId[j] = newId;
-	    }
+      }
     }
     int sumWeight = 0;
     int sumInverseMst = 0;
